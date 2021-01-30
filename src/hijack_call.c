@@ -457,11 +457,13 @@ static void load_pids_table(int fd, void *arg UNUSED) {
     }
   }
 
+  g_pids_table_size = item;
+
+  qsort(g_pids_table, (size_t)g_pids_table_size, sizeof(int), int_match);
+
   for (i = 0; i < item; i++) {
     LOGGER(8, "pid: %d", g_pids_table[i]);
   }
-
-  g_pids_table_size = item;
 
   LOGGER(8, "read %d items from %s", g_pids_table_size, pid_path);
 }
