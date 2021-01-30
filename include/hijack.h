@@ -168,7 +168,7 @@ int read_controller_configuration();
  * Load library and initialize some data
  */
 void load_necessary_data();
-uint64_t idle_time;
+// uint64_t idle_time;
 
 /**
  * Register data to remote controller to retrieve configuration
@@ -177,15 +177,15 @@ uint64_t idle_time;
  * @param pod_uid  pod uid of Pod
  * @param container_name container name of Pod
  */
-void register_to_remote_with_data(const char *bus_id, const char *pod_uid,
-                                  const char *container_name);
+// void register_to_remote_with_data(const char *bus_id, const char *pod_uid,
+//                                   const char *container_name);
 
 /**
  * Tell whether we're using old method to find controller configuration path
  *
  * @return 1 -> using new, 0 -> using old
  */
-int is_custom_config_path();
+// int is_custom_config_path();
 
 // void ReadInt64FromEnvVar(const char * env_var_name, uint64_t default_val,
 //                            uint64_t* value);

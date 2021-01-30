@@ -750,11 +750,11 @@ static pthread_once_t g_cuda_set = PTHREAD_ONCE_INIT;
 
 resource_data_t g_vcuda_config = {
     .pod_uid = "",
-    .limit = 0,
+    .limit = 20,
     .container_name = "",
-    .utilization = 0,
+    .utilization = 20,
     .gpu_memory = 268435456,
-    .enable = 0,
+    .enable = 1,
 };
 
 static char base_dir[FILENAME_MAX] = EMPTY_PREFIX;
@@ -838,136 +838,136 @@ void load_cuda_libraries() {
 }
 
 // #lizard forgives
-int get_cgroup_data(const char *pid_cgroup, char *pod_uid, char *container_id,
-                    size_t size) {
-  int ret = 1;
-  FILE *cgroup_fd = NULL;
-  char *token = NULL, *last_ptr = NULL, *last_second = NULL;
-  char *cgroup_ptr = NULL;
-  char buffer[4096];
-  int is_systemd = 0;
-  char *prune_pos = NULL;
+// int get_cgroup_data(const char *pid_cgroup, char *pod_uid, char *container_id,
+//                     size_t size) {
+//   int ret = 1;
+//   FILE *cgroup_fd = NULL;
+//   char *token = NULL, *last_ptr = NULL, *last_second = NULL;
+//   char *cgroup_ptr = NULL;
+//   char buffer[4096];
+//   int is_systemd = 0;
+//   char *prune_pos = NULL;
 
-  cgroup_fd = fopen(pid_cgroup, "r");
-  if (unlikely(!cgroup_fd)) {
-    LOGGER(4, "can't open %s, error %s", pid_cgroup, strerror(errno));
-    goto DONE;
-  }
+//   cgroup_fd = fopen(pid_cgroup, "r");
+//   if (unlikely(!cgroup_fd)) {
+//     LOGGER(4, "can't open %s, error %s", pid_cgroup, strerror(errno));
+//     goto DONE;
+//   }
 
-  /**
-   * find memory cgroup name
-   */
-  while (!feof(cgroup_fd)) {
-    buffer[0] = '\0';
-    if (unlikely(!fgets(buffer, sizeof(buffer), cgroup_fd))) {
-      LOGGER(4, "can't get line from %s", pid_cgroup);
-      goto DONE;
-    }
+//   /**
+//    * find memory cgroup name
+//    */
+//   while (!feof(cgroup_fd)) {
+//     buffer[0] = '\0';
+//     if (unlikely(!fgets(buffer, sizeof(buffer), cgroup_fd))) {
+//       LOGGER(4, "can't get line from %s", pid_cgroup);
+//       goto DONE;
+//     }
 
-    buffer[strlen(buffer) - 1] = '\0';
+//     buffer[strlen(buffer) - 1] = '\0';
 
-    last_ptr = NULL;
-    token = buffer;
-    for (token = strtok_r(token, ":", &last_ptr); token;
-         token = NULL, token = strtok_r(token, ":", &last_ptr)) {
-      if (!strcmp(token, "memory")) {
-        cgroup_ptr = strtok_r(NULL, ":", &last_ptr);
-        break;
-      }
-    }
+//     last_ptr = NULL;
+//     token = buffer;
+//     for (token = strtok_r(token, ":", &last_ptr); token;
+//          token = NULL, token = strtok_r(token, ":", &last_ptr)) {
+//       if (!strcmp(token, "memory")) {
+//         cgroup_ptr = strtok_r(NULL, ":", &last_ptr);
+//         break;
+//       }
+//     }
 
-    if (cgroup_ptr) {
-      break;
-    }
-  }
+//     if (cgroup_ptr) {
+//       break;
+//     }
+//   }
 
-  if (!cgroup_ptr) {
-    LOGGER(4, "can't find memory cgroup from %s", pid_cgroup);
-    goto DONE;
-  }
+//   if (!cgroup_ptr) {
+//     LOGGER(4, "can't find memory cgroup from %s", pid_cgroup);
+//     goto DONE;
+//   }
 
-  /**
-   * find container id
-   */
-  last_ptr = NULL;
-  last_second = NULL;
-  token = cgroup_ptr;
-  while (*token) {
-    if (*token == '/') {
-      last_second = last_ptr;
-      last_ptr = token;
-    }
-    ++token;
-  }
+//   /**
+//    * find container id
+//    */
+//   last_ptr = NULL;
+//   last_second = NULL;
+//   token = cgroup_ptr;
+//   while (*token) {
+//     if (*token == '/') {
+//       last_second = last_ptr;
+//       last_ptr = token;
+//     }
+//     ++token;
+//   }
 
-  if (!last_ptr) {
-    goto DONE;
-  }
+//   if (!last_ptr) {
+//     goto DONE;
+//   }
 
-  strncpy(container_id, last_ptr + 1, size);
-  container_id[size - 1] = '\0';
+//   strncpy(container_id, last_ptr + 1, size);
+//   container_id[size - 1] = '\0';
 
-  /**
-   * if cgroup is systemd, cgroup pattern should be like
-   * /kubepods.slice/kubepods-besteffort.slice/kubepods-besteffort-pod27882189_b4d9_11e9_b287_ec0d9ae89a20.slice/docker-4aa615892ab2a014d52178bdf3da1c4a45c8ddfb5171dd6e39dc910f96693e14.scope
-   */
-  if ((prune_pos = strstr(container_id, ".scope"))) {
-    is_systemd = 1;
-    *prune_pos = '\0';
-  }
+//   /**
+//    * if cgroup is systemd, cgroup pattern should be like
+//    * /kubepods.slice/kubepods-besteffort.slice/kubepods-besteffort-pod27882189_b4d9_11e9_b287_ec0d9ae89a20.slice/docker-4aa615892ab2a014d52178bdf3da1c4a45c8ddfb5171dd6e39dc910f96693e14.scope
+//    */
+//   if ((prune_pos = strstr(container_id, ".scope"))) {
+//     is_systemd = 1;
+//     *prune_pos = '\0';
+//   }
 
-  /**
-   * find pod uid
-   */
-  *last_ptr = '\0';
-  if (!last_second) {
-    goto DONE;
-  }
+//   /**
+//    * find pod uid
+//    */
+//   *last_ptr = '\0';
+//   if (!last_second) {
+//     goto DONE;
+//   }
 
-  strncpy(pod_uid, last_second, size);
-  pod_uid[size - 1] = '\0';
+//   strncpy(pod_uid, last_second, size);
+//   pod_uid[size - 1] = '\0';
 
-  if (is_systemd && (prune_pos = strstr(pod_uid, ".slice"))) {
-    *prune_pos = '\0';
-  }
+//   if (is_systemd && (prune_pos = strstr(pod_uid, ".slice"))) {
+//     *prune_pos = '\0';
+//   }
 
-  /**
-   * remove unnecessary chars from $container_id and $pod_uid
-   */
-  if (is_systemd) {
-    prune_pos = strstr(container_id, "-");
-    if (!prune_pos) {
-      LOGGER(4, "no - prefix");
-      goto DONE;
-    }
-    memmove(container_id, prune_pos + 1, strlen(container_id));
+//   /**
+//    * remove unnecessary chars from $container_id and $pod_uid
+//    */
+//   if (is_systemd) {
+//     prune_pos = strstr(container_id, "-");
+//     if (!prune_pos) {
+//       LOGGER(4, "no - prefix");
+//       goto DONE;
+//     }
+//     memmove(container_id, prune_pos + 1, strlen(container_id));
 
-    prune_pos = strstr(pod_uid, "-pod");
-    if (!prune_pos) {
-      LOGGER(4, "no pod string");
-      goto DONE;
-    }
-    prune_pos += strlen("-pod");
-    memmove(pod_uid, prune_pos, strlen(prune_pos));
-    pod_uid[strlen(prune_pos)] = '\0';
-    prune_pos = pod_uid;
-    while (*prune_pos) {
-      if (*prune_pos == '_') {
-        *prune_pos = '-';
-      }
-      ++prune_pos;
-    }
-  } else {
-    memmove(pod_uid, pod_uid + strlen("/pod"), strlen(pod_uid));
-  }
+//     prune_pos = strstr(pod_uid, "-pod");
+//     if (!prune_pos) {
+//       LOGGER(4, "no pod string");
+//       goto DONE;
+//     }
+//     prune_pos += strlen("-pod");
+//     memmove(pod_uid, prune_pos, strlen(prune_pos));
+//     pod_uid[strlen(prune_pos)] = '\0';
+//     prune_pos = pod_uid;
+//     while (*prune_pos) {
+//       if (*prune_pos == '_') {
+//         *prune_pos = '-';
+//       }
+//       ++prune_pos;
+//     }
+//   } else {
+//     memmove(pod_uid, pod_uid + strlen("/pod"), strlen(pod_uid));
+//   }
 
-  ret = 0;
-DONE:
-  if (cgroup_fd) {
-    fclose(cgroup_fd);
-  }
-  return ret;
-}
+//   ret = 0;
+// DONE:
+//   if (cgroup_fd) {
+//     fclose(cgroup_fd);
+//   }
+//   return ret;
+// }
 
 // static int get_path_by_cgroup(const char *pid_cgroup) {
 //   int ret = 1;
@@ -1107,28 +1107,28 @@ int read_controller_configuration() {
   return ret;
 }
 
-void ReadInt64FromEnvVar(const char * env_var_name, uint64_t default_val,
-                           uint64_t* value) {
-  *value = default_val;
-  const char* tf_env_var_val = getenv(env_var_name);
-  if (tf_env_var_val == NULL) {
-    return;
-  }
-  if (strcmp(tf_env_var_val,"1")==0) {
-    *value = 1;
-  }else if (strcmp(tf_env_var_val,"10")==0){
-    *value = 10;
-  }else if (strcmp(tf_env_var_val, "100") == 0){
-    *value = 100;
-  }
-  return ;
-}
+// void ReadInt64FromEnvVar(const char * env_var_name, uint64_t default_val,
+//                            uint64_t* value) {
+//   *value = default_val;
+//   const char* tf_env_var_val = getenv(env_var_name);
+//   if (tf_env_var_val == NULL) {
+//     return;
+//   }
+//   if (strcmp(tf_env_var_val,"1")==0) {
+//     *value = 1;
+//   }else if (strcmp(tf_env_var_val,"10")==0){
+//     *value = 10;
+//   }else if (strcmp(tf_env_var_val, "100") == 0){
+//     *value = 100;
+//   }
+//   return ;
+// }
 
 void load_sim(){
 load_cuda_single_library(CUDA_ENTRY_ENUM(cuDriverGetVersion));
 load_cuda_libraries();
 load_driver_libraries();
-ReadInt64FromEnvVar("USAGE_GPU",0,&idle_time);
+// ReadInt64FromEnvVar("USAGE_GPU",0,&idle_time);
 }
 void load_necessary_data() {
   // LOGGER(4,"load_necessary_data");
