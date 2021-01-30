@@ -50,9 +50,9 @@ RUN apt install -y alien
 COPY --from=rpmpkg  /root/rpmbuild/RPMS/x86_64/vcuda-${version}-${commit}.el7.x86_64.rpm /tmp
 RUN alien --install /tmp/vcuda-${version}-${commit}.el7.x86_64.rpm
 
-COPY  /usr/lib64/libcuda-control.so /lib64/libcontroller.so
-COPY /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libcontroller.so
-COPY /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libcuda.so
-COPY /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libcuda.so.1
-COPY /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libnvidia-ml.so
-COPY /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libnvidia-ml.so.1
+RUN cp /usr/lib64/libcuda-control.so /lib64/libcontroller.so &&\
+  cp /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libcontroller.so &&\
+  cp /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libcuda.so &&\
+  cp /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libcuda.so.1 &&\
+  cp /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libnvidia-ml.so &&\
+  cp /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libnvidia-ml.so.1
