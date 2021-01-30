@@ -1,7 +1,7 @@
 # stage 1
-FROM nvidia/cuda:10.1-devel-ubuntu18.04 as build
+FROM tensorflow/tensorflow:latest-gpu as build
 
-RUN apt update && apt install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
   cmake libvdpau-dev && \
   rm -rf /var/lib/apt/lists/*
 
@@ -40,10 +40,19 @@ RUN rpmbuild -bb --quiet \
   vcuda.spec
 
 # stage 3
-FROM centos:7
+FROM tensorflow/tensorflow:latest-gpu
 
 ARG version
 ARG commit
 
+RUN apt install -y alien
+
 COPY --from=rpmpkg  /root/rpmbuild/RPMS/x86_64/vcuda-${version}-${commit}.el7.x86_64.rpm /tmp
-RUN rpm -ivh /tmp/vcuda-${version}-${commit}.el7.x86_64.rpm && rm -rf /tmp/vcuda-${version}-${commit}.el7.x86_64.rpm
+RUN alien --install /tmp/vcuda-${version}-${commit}.el7.x86_64.rpm
+
+COPY  /usr/lib64/libcuda-control.so /lib64/libcontroller.so
+COPY /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libcontroller.so
+COPY /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libcuda.so
+COPY /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libcuda.so.1
+COPY /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libnvidia-ml.so
+COPY /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libnvidia-ml.so.1

@@ -760,7 +760,7 @@ resource_data_t g_vcuda_config = {
 static char base_dir[FILENAME_MAX] = EMPTY_PREFIX;
 char config_path[FILENAME_MAX] = CONTROLLER_CONFIG_PATH;
 char pid_path[FILENAME_MAX] = PIDS_CONFIG_PATH;
-char driver_version[FILENAME_MAX] = "418.87.00";
+char driver_version[FILENAME_MAX] = "450.51.06";
 
 static void load_driver_libraries() {
   void *table = NULL;
