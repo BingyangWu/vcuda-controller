@@ -752,9 +752,10 @@ resource_data_t g_vcuda_config = {
     .pod_uid = "",
     .limit = 20,
     .container_name = "",
-    .utilization = 20,
+    .utilization = 5,
     .gpu_memory = 268435456,
     .enable = 1,
+    .hard_limit = 1,
 };
 
 static char base_dir[FILENAME_MAX] = EMPTY_PREFIX;

@@ -55,4 +55,6 @@ RUN cp /usr/lib64/libcuda-control.so /lib64/libcontroller.so &&\
   cp /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libcuda.so &&\
   cp /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libcuda.so.1 &&\
   cp /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libnvidia-ml.so &&\
-  cp /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libnvidia-ml.so.1
+  cp /usr/lib64/libcuda-control.so /usr/local/cuda/lib64/libnvidia-ml.so.1 &&\
+  apt-get install -y vim &&\
+  pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio===0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
